@@ -75,19 +75,23 @@ def normalize_data(df, variable):
 
     return(df_norm)
 
-def fit_data(df_norm, variable):
+def fit_data(df_norm, variable, rig):
     """Fits a polynomial equation to the normalized points in the data table
 
     Args:
         df_norm (dataframe): normalized dataframe output from normalize_data
         variable (str): 'total' or 'split'.  Total will calculate based of the linear relationship, split will use a 3rd order polynomial
+        rig (str): 'meso1' or 'meso2'.  Temporary fix for meso1 total power being non-linear (exponential). uses 2 degree polynomial for meso1
     """
 
     y = df_norm['mean']
 
     #total power relationship is a linear equation
     if variable =='total':
-        degree = 1
+        if rig == 'meso1':
+            degree = 2
+        else:
+            degree = 1
         x = df_norm['total_power']
     #split power relationship is a 3rd order polynomial
     elif variable =='split':
@@ -126,10 +130,10 @@ def calculate_power(filepath, rig, total_percent, split_percent):
     beam2_norm_split = normalize_data(df_beam2, 'split')
 
     #create best fits for normalized data
-    beam1_total_fn = fit_data(beam1_norm_total, 'total')
-    beam2_total_fn = fit_data(beam2_norm_total, 'total')
-    beam1_split_fn = fit_data(beam1_norm_split, 'split')
-    beam2_split_fn = fit_data(beam2_norm_split, 'split')
+    beam1_total_fn = fit_data(beam1_norm_total, 'total', rig)
+    beam2_total_fn = fit_data(beam2_norm_total, 'total', rig)
+    beam1_split_fn = fit_data(beam1_norm_split, 'split', rig)
+    beam2_split_fn = fit_data(beam2_norm_split, 'split', rig)
 
     #relationship for total power from 0 to 100 is linear. Calculate that using total percent.  Relationship between
     #split 0 to 100 is a 3rd order polynomial.  Calculate that using split percent, then multiply by the total percent results. 
