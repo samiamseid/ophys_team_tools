@@ -46,7 +46,7 @@ def physio_mean(filepath, start_index = 0, end_index = 500):
     return(data)
         
 def calculate_ssim(image, zstack):
-    coeffs = [ssim(image.astype('uint16'), zplane) for zplane in zstack]
+    coeffs = [ssim(image, zplane.astype('float64')) for zplane in zstack]
     return(coeffs)
 
 def get_experiments(experiment_id):
