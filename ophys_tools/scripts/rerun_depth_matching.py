@@ -122,7 +122,7 @@ experiment_ids = [1433278848, 1433278851, 1433278845, 1433278846, 1433278849,
 for id in experiment_ids:
     try:
         print('Working on '+str(id))
-        dmt.save_metrics(dmt.depth_calculator(id))
+        dmt.save_metrics(dmt.depth_calculator(id), id)
     except:
         print('Issue processing '+str(id))
 

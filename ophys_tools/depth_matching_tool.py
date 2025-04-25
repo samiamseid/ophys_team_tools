@@ -46,7 +46,7 @@ def physio_mean(filepath, start_index = 0, end_index = 500):
     return(data)
         
 def calculate_ssim(image, zstack):
-    coeffs = [ssim(image, zplane) for zplane in zstack]
+    coeffs = [ssim(image.astype('uint16'), zplane) for zplane in zstack]
     return(coeffs)
 
 def get_experiments(experiment_id):
@@ -146,7 +146,7 @@ def plot_images(parent, child, experiment_id):
     filename = 'roi_matching.png'
     plt.savefig(os.path.join(prepare_directory(experiment_id), filename))
 
-def save_metrics(metrics_dict):
+def save_metrics(metrics_dict, experiment_id):
     pd.DataFrame([metrics_dict]).to_csv(os.path.join(os.getenv('MQCM_IMAGE_STORAGE_DIR')+'\\'+str(experiment_id)+'\\cell_matching', str(experiment_id)+'_cellmatch_metrics.csv'))
     
 def depth_calculator(experiment_id):

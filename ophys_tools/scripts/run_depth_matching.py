@@ -29,7 +29,7 @@ def job(t):
     experiment_ids = df[df['date_of_acquisition']>d]['session_id'].values
     for id in experiment_ids:
         try:
-            dmt.save_metrics(dmt.depth_calculator(id))
+            dmt.save_metrics(dmt.depth_calculator(id), id)
 
         except:
             print('Issue processing '+str(id))
