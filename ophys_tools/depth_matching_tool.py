@@ -135,6 +135,7 @@ def plot_ssim(coeffs_parent, coeffs_current, experiment_id):
     plt.legend()
     filename = 'ssim_score_plot.png'
     plt.savefig(os.path.join(prepare_directory(experiment_id), filename))
+    plt.close()
 
 def plot_images(parent, child, experiment_id):
     plt.figure()
@@ -145,6 +146,7 @@ def plot_images(parent, child, experiment_id):
     ax[1].set_title('Current Physio Start')
     filename = 'roi_matching.png'
     plt.savefig(os.path.join(prepare_directory(experiment_id), filename))
+    plt.close()
 
 def save_metrics(metrics_dict, experiment_id):
     pd.DataFrame([metrics_dict]).to_csv(os.path.join(os.getenv('MQCM_IMAGE_STORAGE_DIR')+'\\'+str(experiment_id)+'\\cell_matching', str(experiment_id)+'_cellmatch_metrics.csv'))
