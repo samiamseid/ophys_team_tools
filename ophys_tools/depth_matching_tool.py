@@ -179,4 +179,13 @@ def depth_calculator(experiment_id):
     print(str(shift_matching[1]*0.78125)+'um mismatch in X. '+str(shift_matching[0]*0.78125)+'um mismatch in Y.')
     plot_ssim(coeffs_parent, coeffs_current, experiment_id)
     print(str((int(np.argmax(coeffs_parent))-int(np.argmax(coeffs_current)))*0.75)+'um calculated depth mismatch')
-    
+    metrics_dict = {
+        'parent_match_frame': int(np.argmax(coeffs_parent)),
+        'child_match_frame': int(np.argmax(coeffs_current)),
+        'match_drift_frames': int(np.argmax(coeffs_parent))-int(np.argmax(coeffs_current)),
+        'match_drift_um': (int(np.argmax(coeffs_parent))-int(np.argmax(coeffs_current)))*0.75,
+        'parent_match_ssim_score': coeffs_parent[int(np.argmax(coeffs_parent))],
+        'child_match_ssim_score': coeffs_current[int(np.argmax(coeffs_current))],
+        'experiment_id': experiment_id
+    }
+    return(metrics_dict)
