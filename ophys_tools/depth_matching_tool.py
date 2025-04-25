@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from mindscope_qc_metrics.utils.util import get_psql_dict_cursor
 import os
 from skimage.metrics import structural_similarity as ssim
+import pandas as pd
 
 def crop_image(image, shift_xy):
     _shape = image.shape
@@ -145,6 +146,9 @@ def plot_images(parent, child, experiment_id):
     filename = 'roi_matching.png'
     plt.savefig(os.path.join(prepare_directory(experiment_id), filename))
 
+def save_metrics(metrics_dict):
+    pd.DataFrame([metrics_dict]).to_csv(os.path.join(os.getenv('MQCM_IMAGE_STORAGE_DIR')+'\\'+str(experiment_id)+'\\cell_matching', str(experiment_id)+'_cellmatch_metrics.csv'))
+    
 def depth_calculator(experiment_id):
     #load the data
     child, parent, stack = get_paths(experiment_id)
