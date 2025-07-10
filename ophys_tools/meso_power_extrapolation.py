@@ -3,7 +3,7 @@
 import pandas as pd
 import numpy as np
 
-def readings_df(filepath, rig):
+def readings_df(filepath, rig, date = None):
     """
     extract the table from the most recent power readings table.
     filepath = path to power readings recordings
@@ -13,6 +13,8 @@ def readings_df(filepath, rig):
     df = pd.read_csv(filepath)
     df = df[df['rig']==rig]
     df['date_dt'] = pd.to_datetime(df.date)
+    if date != None:
+        df[df['date_dt']<=date]
     recent = df.sort_values(by = 'date_dt')['date_dt'].unique()[-1]
     df = df[df['date_dt']==recent]
 
@@ -75,7 +77,7 @@ def normalize_data(df, variable):
 
     return(df_norm)
 
-def fit_data(df_norm, variable, rig):
+def fit_data(df_norm, variable, fit = 'linear'):
     """Fits a polynomial equation to the normalized points in the data table
 
     Args:
@@ -88,10 +90,12 @@ def fit_data(df_norm, variable, rig):
 
     #total power relationship is a linear equation
     if variable =='total':
-        if rig == 'meso1':
+        if fit =='linear':
+            degree = 1
+        elif fit =='exponential':
             degree = 2
         else:
-            degree = 1
+            return('Not a valid fit.  Please select "linear" or "exponential"')
         x = df_norm['total_power']
     #split power relationship is a 3rd order polynomial
     elif variable =='split':
@@ -106,7 +110,7 @@ def fit_data(df_norm, variable, rig):
 
     return(poly_func)
 
-def calculate_power(filepath, rig, total_percent, split_percent):
+def calculate_power(filepath, rig, total_percent, split_percent, date = None, fit = 'linear'):
     """This function calculates the power in each beam for a pair of planes based off the most recent power
       recordings, and the tolta/split for the relevant pair of planes
 
@@ -117,7 +121,7 @@ def calculate_power(filepath, rig, total_percent, split_percent):
         split_percent (int): split power percent used in the pair of planes
     """
     #pull relevant dfs
-    df_beam1, df_beam2 = readings_df(filepath, rig)
+    df_beam1, df_beam2 = readings_df(filepath, rig, date=date)
 
     #need max power per beam to go back after normalizing
     beam1_max = np.max(df_beam1['split_beam1_0'])
@@ -130,10 +134,10 @@ def calculate_power(filepath, rig, total_percent, split_percent):
     beam2_norm_split = normalize_data(df_beam2, 'split')
 
     #create best fits for normalized data
-    beam1_total_fn = fit_data(beam1_norm_total, 'total', rig)
-    beam2_total_fn = fit_data(beam2_norm_total, 'total', rig)
-    beam1_split_fn = fit_data(beam1_norm_split, 'split', rig)
-    beam2_split_fn = fit_data(beam2_norm_split, 'split', rig)
+    beam1_total_fn = fit_data(beam1_norm_total, 'total')
+    beam2_total_fn = fit_data(beam2_norm_total, 'total')
+    beam1_split_fn = fit_data(beam1_norm_split, 'split')
+    beam2_split_fn = fit_data(beam2_norm_split, 'split')
 
     #relationship for total power from 0 to 100 is linear. Calculate that using total percent.  Relationship between
     #split 0 to 100 is a 3rd order polynomial.  Calculate that using split percent, then multiply by the total percent results. 
