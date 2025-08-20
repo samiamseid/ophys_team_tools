@@ -110,7 +110,7 @@ def fit_data(df_norm, variable, fit = 'linear'):
 
     return(poly_func)
 
-def calculate_power(filepath, rig, total_percent, split_percent, date = None, fit = 'linear'):
+def calculate_power(filepath, rig, total_percent, split_percent, date = None):
     """This function calculates the power in each beam for a pair of planes based off the most recent power
       recordings, and the tolta/split for the relevant pair of planes
 
@@ -120,29 +120,20 @@ def calculate_power(filepath, rig, total_percent, split_percent, date = None, fi
         total_percent (int): total power percent used in the pair of planes
         split_percent (int): split power percent used in the pair of planes
     """
+    from scipy.interpolate import RegularGridInterpolator
+    total_levels = np.array([0, 20, 40, 60, 80, 100])
+    split_levels = np.array([0, 20, 40, 60, 80, 100])
+
     #pull relevant dfs
     df_beam1, df_beam2 = readings_df(filepath, rig, date=date)
+    df1_drop = df_beam1.drop('total_power', axis =1) 
+    df2_drop = df_beam2.drop('total_power', axis =1)
 
-    #need max power per beam to go back after normalizing
-    beam1_max = np.max(df_beam1['split_beam1_0'])
-    beam2_max = np.max(df_beam2['split_beam2_100'])
+    df1_interp = RegularGridInterpolator((total_levels, split_levels), df1_drop.values)
+    df2_interp = RegularGridInterpolator((total_levels, split_levels), df2_drop.values)
+    point=np.array([[total_percent, split_percent]])
+    beam1_power = df1_interp(point)[0]
+    beam2_power = df2_interp(point)[0]
 
-    #normalize dfs
-    beam1_norm_total = normalize_data(df_beam1, 'total')
-    beam2_norm_total = normalize_data(df_beam2, 'total')
-    beam1_norm_split = normalize_data(df_beam1, 'split')
-    beam2_norm_split = normalize_data(df_beam2, 'split')
-
-    #create best fits for normalized data
-    beam1_total_fn = fit_data(beam1_norm_total, 'total')
-    beam2_total_fn = fit_data(beam2_norm_total, 'total')
-    beam1_split_fn = fit_data(beam1_norm_split, 'split')
-    beam2_split_fn = fit_data(beam2_norm_split, 'split')
-
-    #relationship for total power from 0 to 100 is linear. Calculate that using total percent.  Relationship between
-    #split 0 to 100 is a 3rd order polynomial.  Calculate that using split percent, then multiply by the total percent results. 
-    beam1_power_calculated = (beam1_total_fn(total_percent)*beam1_max)*beam1_split_fn(split_percent)
-    beam2_power_calculated = (beam2_total_fn(total_percent)*beam2_max)*beam2_split_fn(split_percent)
-
-    return(beam1_power_calculated, beam2_power_calculated)
+    return(beam1_power, beam2_power)
 
